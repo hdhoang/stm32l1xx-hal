@@ -1,0 +1,33 @@
+on: [push, pull_request]
+
+name: Continuous integration
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mcu:
+          - stm32l100
+          - stm32l151
+          - stm32l152
+          - stm32l162
+        rust:
+          - stable
+        include:
+          - rust: nightly
+            mcu: stm32l162
+            experimental: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          target: thumbv7m-none-eabi
+          override: true
+      - uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --features=${{ matrix.mcu }}
